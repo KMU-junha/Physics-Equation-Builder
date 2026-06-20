@@ -11,7 +11,7 @@
 * **2026 국민대학교 전자공학부 창의설계 경진대회**
     * **수상:** 은상 (Silver Prize)
     * **의의:** 기존 데이터 기반 방정식 탐색 연구에서 다루지 못한 '기호식 입출력 쌍'에 대한 연산자 역추적 문제를 정형화하고 해결 파이프라인을 제시함.
-    * <img src="Poster_Physics_Equation_Builder" width="400">
+    * <img src="Poster_Physics_Equation_Builder.png" width="400">
 
 ## 2. Motivation & Problem Definition (배경 및 문제 정의)
 * **수치형 데이터 탐색의 한계 (Numerical Data):**
