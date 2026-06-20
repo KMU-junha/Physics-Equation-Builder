@@ -29,7 +29,7 @@
 
 ## 4. System Architecture (전체 시스템 아키텍처)
 
-![전체 시스템 아키텍처 개요](<img width="1348" height="3179" alt="fig1" src="https://github.com/user-attachments/assets/9402b846-bae6-487d-94ee-fabe9d870c65" />)
+![전체 시스템 아키텍처 개요](fig1.png)
 
 * **Data Type Router:** 입력된 CSV 데이터의 셀 값이 부동소수점(float) 자료형으로 변환 가능한지 여부를 판별함.
 * 수치적 일관성이 확인되면 **Numerical Track** 으로, 대수적/미적분학적 구조 탐색이 필요하면 **Symbolic Track** 으로 분기하여 각각의 독립된 최적화 루프를 가동함.
@@ -38,7 +38,7 @@
 연속적인 물리 현상의 실측 데이터로부터 미분/대수 방정식을 강건하게 도출하는 경로입니다.
 
 
-![Numerical Track 세부 파이프라인](<img width="2245" height="505" alt="fig2" src="https://github.com/user-attachments/assets/208725db-0b60-42af-9c1e-6f3a1d08c19f" />)
+![Numerical Track 세부 파이프라인](fig2.png)
 
 * **GPR Surrogate (노이즈 격리 전처리):**
     * RBF 커널(물리 신호의 연속성)과 WhiteKernel(독립적 노이즈 분산)의 합성 커널을 사용하여 관측 데이터를 분해.
@@ -53,7 +53,7 @@
 ### 4-2. Symbolic Track
 기호식 입출력 쌍으로부터 수학적 연산자(미분, 적분, 유리식 치환 등)를 역추적하는 경로입니다.
 
-![Symbolic Track 세부 파이프라인](<img width="1118" height="2634" alt="fig4" src="https://github.com/user-attachments/assets/d6c45268-2004-431a-b38a-e22cc4ef81d0" />)
+![Symbolic Track 세부 파이프라인](fig4.png)
 
 * **Symbolic Shortcut (결정론적 우회):**
     * 데이터 입력 즉시 1~2계 미분 연산자 검출 및 유리식 직접 치환을 시도.
