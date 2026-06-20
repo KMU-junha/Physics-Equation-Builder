@@ -53,7 +53,7 @@
 ### 4-2. Symbolic Track
 기호식 입출력 쌍으로부터 수학적 연산자(미분, 적분, 유리식 치환 등)를 역추적하는 경로입니다.
 
-![Symbolic Track 세부 파이프라인](fig4.png)
+<img src="fig4.png" width="400">
 
 * **Symbolic Shortcut (결정론적 우회):**
     * 데이터 입력 즉시 1~2계 미분 연산자 검출 및 유리식 직접 치환을 시도.
