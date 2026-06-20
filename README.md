@@ -29,7 +29,7 @@
 
 ## 4. System Architecture (전체 시스템 아키텍처)
 
-![전체 시스템 아키텍처 개요](<img src="fig1.png" width="300">)
+<img src="fig1.png" width="300">
 
 * **Data Type Router:** 입력된 CSV 데이터의 셀 값이 부동소수점(float) 자료형으로 변환 가능한지 여부를 판별함.
 * 수치적 일관성이 확인되면 **Numerical Track** 으로, 대수적/미적분학적 구조 탐색이 필요하면 **Symbolic Track** 으로 분기하여 각각의 독립된 최적화 루프를 가동함.
