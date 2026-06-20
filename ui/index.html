@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Equation Builder</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js" async></script>
+<style>
+/* ── Theme Variables ───────────────────────────────────────── */
+:root {
+  /* Dark mode (default) */
+  --bg:         #0a0a0a;
+  --bg-subtle:  #141414;
+  --surface:    rgba(255,255,255,.04);
+  --surface-hover: rgba(255,255,255,.07);
+  --border:     rgba(255,255,255,.09);
+  --border-mid: rgba(255,255,255,.15);
+  --border-hover: rgba(255,255,255,.25);
+  --text-main:  #e2e8f0;
+  --text-mid:   #d1d5db;
+  --text-sub:   #9ca3af;
+  --text-muted: #6b7280;
+  --text-faint: #4b5563;
+  --h1-from:    #ffffff;
+  --h1-to:      #9ca3af;
+  --score-from: #ffffff;
+  --score-to:   #9ca3af;
+  --nav-bg:     rgba(10,10,10,.85);
+  --nav-active-bg: rgba(255,255,255,.10);
+  --nav-active-text: #ffffff;
+  --drop-border: rgba(180,180,180,.25);
+  --drop-hover-border: rgba(255,255,255,.5);
+  --drop-hover-bg: rgba(255,255,255,.04);
+  --input-bg:   rgba(255,255,255,.05);
+  --log-border: rgba(255,255,255,.03);
+  --btn-prim-from: #374151;
+  --btn-prim-to:   #6b7280;
+  --progress-bg: rgba(255,255,255,.08);
+  --progress-from: #4b5563;
+  --progress-to:   #d1d5db;
+  --badge-bg:   rgba(255,255,255,.08);
+  --badge-border: rgba(255,255,255,.18);
+  --tab-bg:     rgba(255,255,255,.05);
+  --tab-active-bg: rgba(255,255,255,.12);
+  --tab-active-border: rgba(255,255,255,.3);
+  --tab-active-text: #ffffff;
+  --overlay-bg: rgba(0,0,0,.75);
+  --adv-bg:     rgba(0,0,0,.25);
+  --adv-border: rgba(255,255,255,.08);
+  --inner-bg:   rgba(255,255,255,.02);
+  --inner-border: rgba(255,255,255,.10);
+  --modal-bg:   #111111;
+  --chart-grid: rgba(255,255,255,.05);
+  --chart-tick: #6b7280;
+  --theme-icon: '☀️';
+}
+[data-theme="light"] {
+  --bg:         #f4f4f5;
+  --bg-subtle:  #e4e4e7;
+  --surface:    rgba(255,255,255,.80);
+  --surface-hover: rgba(255,255,255,.95);
+  --border:     rgba(0,0,0,.09);
+  --border-mid: rgba(0,0,0,.15);
+  --border-hover: rgba(0,0,0,.28);
+  --text-main:  #0f172a;
+  --text-mid:   #1f2937;
+  --text-sub:   #374151;
+  --text-muted: #4b5563;
+  --text-faint: #6b7280;
+  --h1-from:    #0f172a;
+  --h1-to:      #374151;
+  --score-from: #0f172a;
+  --score-to:   #374151;
+  --nav-bg:     rgba(244,244,245,.90);
+  --nav-active-bg: rgba(0,0,0,.08);
+  --nav-active-text: #111827;
+  --drop-border: rgba(0,0,0,.18);
+  --drop-hover-border: rgba(0,0,0,.4);
+  --drop-hover-bg: rgba(0,0,0,.03);
+  --input-bg:   rgba(0,0,0,.04);
+  --log-border: rgba(0,0,0,.05);
+  --btn-prim-from: #374151;
+  --btn-prim-to:   #6b7280;
+  --progress-bg: rgba(0,0,0,.08);
+  --progress-from: #9ca3af;
+  --progress-to:   #374151;
+  --badge-bg:   rgba(0,0,0,.06);
+  --badge-border: rgba(0,0,0,.14);
+  --tab-bg:     rgba(0,0,0,.05);
+  --tab-active-bg: rgba(0,0,0,.10);
+  --tab-active-border: rgba(0,0,0,.25);
+  --tab-active-text: #111827;
+  --overlay-bg: rgba(0,0,0,.6);
+  --adv-bg:     rgba(0,0,0,.04);
+  --adv-border: rgba(0,0,0,.09);
+  --inner-bg:   rgba(0,0,0,.03);
+  --inner-border: rgba(0,0,0,.09);
+  --modal-bg:   #ffffff;
+  --chart-grid: rgba(0,0,0,.06);
+  --chart-tick: #6b7280;
+  --theme-icon: '🌙';
+}
+
+/* ── Theme Toggle Button ─────────────────────────────────── */
+#themeToggle {
+  background: var(--surface);
+  border: 1px solid var(--border-mid);
+  color: var(--text-mid);
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: 0.2s;
+  backdrop-filter: blur(5px);
+  line-height: 1;
+}
+#themeToggle:hover { background: var(--surface-hover); }
+
+/* ── Base ────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text-main);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+.bg{position:fixed;inset:0;pointer-events:none}
+.view{display:none;min-height:100vh;padding:2rem;animation:fadeIn .4s ease}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.glass{background:var(--surface);border:1px solid var(--border);border-radius:16px;backdrop-filter:blur(20px)}
+h1{font-size:2.2rem;font-weight:700;background:linear-gradient(135deg,var(--h1-from),var(--h1-to));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+.sub{color:var(--text-muted);font-size:.95rem;margin-bottom:2rem}
+
+/* Upload View */
+#uploadView{max-width:720px;margin:0 auto;padding-top:8vh}
+.drop-zone{border:2px dashed var(--drop-border);border-radius:16px;padding:4rem 2rem;text-align:center;cursor:pointer;transition:.3s;position:relative}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--drop-hover-border);background:var(--drop-hover-bg)}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop-icon{font-size:3rem;margin-bottom:1rem;display:block}
+.drop-zone p{color:var(--text-sub);font-size:.95rem}
+.preview{margin-top:1.5rem;padding:1rem;border-radius:12px;background:var(--inner-bg);border:1px solid var(--border);font-size:.85rem;color:var(--text-muted);display:none}
+.params{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.5rem}
+.param label{display:block;color:var(--text-sub);font-size:.8rem;margin-bottom:.4rem}
+.param input{width:100%;background:var(--input-bg);border:1px solid var(--border-mid);border-radius:8px;padding:.6rem 1rem;color:var(--text-main);font-size:.9rem;outline:none;transition:.2s}
+.param input:focus{border-color:var(--border-hover)}
+.btn{width:100%;padding:1rem;border-radius:12px;border:none;cursor:pointer;font-size:1rem;font-weight:600;transition:.3s;margin-top:1rem}
+.btn-primary{background:linear-gradient(135deg,var(--btn-prim-from),var(--btn-prim-to));color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.file-info{margin-top:1rem;padding:.8rem 1.2rem;background:var(--surface);border:1px solid var(--border-mid);border-radius:10px;display:none;font-size:.9rem;color:var(--text-mid)}
+
+/* Running View */
+#runView{max-width:1100px;margin:0 auto;padding-top:4vh}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem}
+.card{padding:1.5rem;border-radius:16px}
+.card h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:1rem}
+.score-big{font-size:3.5rem;font-weight:800;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,var(--score-from),var(--score-to));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.depth-badge{display:inline-block;padding:.3rem .8rem;background:var(--badge-bg);border:1px solid var(--badge-border);border-radius:20px;font-size:.8rem;color:var(--text-mid);margin-top:.5rem}
+.kernel-eq{
+  font-family:'JetBrains Mono','Fira Code',monospace;
+  font-size:clamp(.72rem,1.1vw,.88rem);
+  color:var(--text-main);
+  word-break:break-word;
+  overflow-wrap:break-word;
+  white-space:pre-wrap;
+  margin-top:.5rem;
+  line-height:1.8;
+  max-height:5rem;
+  overflow-y:auto;
+}
+.log-panel{grid-column:1/-1;height:180px;overflow-y:auto;font-family:monospace;font-size:.78rem;color:var(--text-faint);line-height:1.6;padding:.5rem}
+.log-panel .log-line{padding:.1rem 0;border-bottom:1px solid var(--log-border)}
+.log-panel .log-gen{color:var(--text-sub)}
+.log-panel .log-found{color:#10b981;font-weight:700}
+.progress-bar{height:6px;background:var(--progress-bg);border-radius:99px;margin:1rem 0;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--progress-from),var(--progress-to));border-radius:99px;transition:width .5s ease;width:0%}
+.chart-wrap{height:220px}
+
+/* Result View */
+#resultView{max-width:860px;margin:0 auto;padding-top:8vh;text-align:center}
+.result-card{padding:3rem;margin-top:2rem}
+.score-label{font-size:.85rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem}
+.score-final{font-size:5rem;font-weight:900;background:linear-gradient(135deg,#f59e0b,#ef4444,var(--text-mid));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+/* Equation display — result view */
+.eq-display{
+  margin:2rem auto;
+  padding:1.5rem 2rem;
+  background:var(--surface);
+  border:1px solid var(--border-mid);
+  border-radius:12px;
+  font-family:'JetBrains Mono','Fira Code','Cascadia Code',monospace;
+  font-size:clamp(.75rem,1.6vw,1rem);
+  color:var(--text-mid);
+  word-break:break-word;
+  overflow-wrap:break-word;
+  white-space:pre-wrap;
+  line-height:1.9;
+  letter-spacing:.01em;
+  text-align:left;
+}
+/* LaTeX rendered equation */
+.eq-latex{
+  margin:1.5rem 0;
+  min-height:52px;
+  font-size:1.15rem;
+  color:var(--text-main);
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:.5rem 0;
+  /* horizontal scroll only when truly necessary */
+  scrollbar-width:thin;
+}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:2rem;text-align:left}
+.meta-item .label{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+.meta-item .value{font-size:1.1rem;font-weight:600;color:var(--text-main);margin-top:.3rem}
+.btn-row{display:flex;gap:1rem;margin-top:2rem;justify-content:center}
+.btn-sec{flex:1;max-width:200px;padding:.8rem;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text-sub);cursor:pointer;font-size:.9rem;transition:.2s}
+.btn-sec:hover{border-color:var(--border-hover);color:var(--text-main)}
+
+/* Sample Cards */
+.sample-card{background:var(--inner-bg);border:1px solid var(--border);border-radius:12px;padding:1.2rem;text-align:left;cursor:pointer;transition:.2s;display:flex;flex-direction:column;gap:.3rem;width:100%}
+.sample-card:hover{background:var(--surface-hover);border-color:var(--border-hover);transform:translateY(-2px)}
+.sample-card .s-title{color:var(--text-main);font-weight:bold;font-size:.95rem}
+.sample-card .s-desc{color:var(--text-muted);font-size:.75rem}
+
+/* Chart Tabs */
+.btn-tab{padding:.5rem 1rem;border-radius:8px;background:var(--tab-bg);border:1px solid var(--border);color:var(--text-sub);cursor:pointer;font-size:.85rem;transition:.2s}
+.btn-tab:hover{background:var(--surface-hover);color:var(--text-main)}
+.btn-tab.active{background:var(--tab-active-bg);border-color:var(--tab-active-border);color:var(--tab-active-text);font-weight:bold}
+
+/* Nav */
+.nav{position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;background:var(--nav-bg);border:1px solid var(--border-mid);border-radius:50px;padding:.4rem;backdrop-filter:blur(20px);z-index:100}
+.nav-btn{padding:.4rem 1.2rem;border-radius:40px;border:none;background:none;color:var(--text-muted);cursor:pointer;font-size:.85rem;transition:.2s}
+.nav-btn.active{background:var(--nav-active-bg);color:var(--nav-active-text)}
+
+/* Found overlay */
+.found-overlay{position:fixed;inset:0;background:var(--overlay-bg);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(8px)}
+.found-overlay.show{display:flex}
+.found-box{text-align:center;padding:3rem;max-width:480px}
+.found-icon{font-size:5rem;animation:bounce 1s infinite alternate}
+@keyframes bounce{to{transform:translateY(-12px)}}
+.found-title{font-size:2rem;font-weight:800;color:#10b981;margin:1rem 0 .5rem}
+.found-title.yellow{color:#f59e0b}
+.found-title.blue{color:#38bdf8}
+.found-title.gray-blue{color:#94a3b8}
+.found-eq{
+  font-family:'JetBrains Mono','Fira Code',monospace;
+  font-size:clamp(.7rem,1.3vw,.85rem);
+  color:var(--text-mid);
+  margin:.5rem 0 2rem;
+  word-break:break-word;
+  overflow-wrap:break-word;
+  white-space:pre-wrap;
+  line-height:1.8;
+  text-align:left;
+  max-height:120px;
+  overflow-y:auto;
+  padding:.5rem .8rem;
+  background:var(--inner-bg);
+  border-radius:8px;
+}
+.btn-close{padding:.8rem 2.5rem;border-radius:12px;border:none;background:linear-gradient(135deg,var(--btn-prim-from),var(--btn-prim-to));color:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+
+/* Light mode — select / option 배경 */
+[data-theme="light"] select { background:var(--input-bg); color:var(--text-main); }
+[data-theme="light"] option { background:#ffffff; color:#111827; }
+[data-theme="light"] .log-panel .log-line { border-bottom-color: rgba(0,0,0,.05); }
+
+/* Analysis panel — theme-aware helper classes */
+.struct-label { color: var(--text-main); font-weight: bold; }
+.struct-value { color: var(--text-sub); font-family: monospace; }
+.struct-kernel { color: #10b981; font-weight: bold; font-family: monospace; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<!-- History Button -->
+<div style="position:fixed;top:1.5rem;right:2rem;z-index:150;display:flex;gap:0.5rem;">
+  <button id="themeToggle" onclick="toggleTheme()" title="테마 전환">☀️</button>
+  <button onclick="openHistory()" style="background:var(--surface);border:1px solid var(--border-mid);color:var(--text-mid);padding:0.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:bold;font-size:0.9rem;transition:0.2s;backdrop-filter:blur(5px);">
+    📜 탐색 히스토리
+  </button>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showView('upload')">📂 업로드</button>
+  <button class="nav-btn" onclick="showView('run')" id="navRun">⚡ 실행</button>
+  <button class="nav-btn" onclick="showView('result')" id="navResult">✨ 결과</button>
+</nav>
+
+<!-- UPLOAD VIEW -->
+<div id="uploadView" class="view active">
+  <h1>Physics Equation Builder</h1>
+  <p class="sub">데이터를 업로드하면 AI가 숨겨진 물리 방정식을 자동으로 발견합니다</p>
+  <div class="glass" style="padding:2rem">
+    <div class="drop-zone" id="dropZone">
+      <input type="file" accept=".csv" id="fileInput" onchange="handleFile(this.files[0])">
+      <span class="drop-icon">📊</span>
+      <strong style="display:block;margin-bottom:.5rem;color:#e2e8f0">CSV 파일을 드래그하거나 클릭하여 선택</strong>
+      <p>입력/출력 쌍이 담긴 심볼릭 데이터 파일</p>
+    </div>
+    <div class="file-info" id="fileInfo"></div>
+    <div class="preview" id="previewBox"></div>
+    <div class="params">
+      <div class="param">
+        <label>Population Size</label>
+        <input type="number" id="popSize" value="1000" min="100" max="5000">
+      </div>
+      <div class="param">
+        <label>Max Generations</label>
+        <input type="number" id="generations" value="15" min="1" max="50">
+      </div>
+      <div class="param" style="grid-column: 1 / -1; display:none;">
+        <label>탐색 옵션 (Search Mode)</label>
+        <select id="searchMode" style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:.6rem 1rem;color:#e2e8f0;font-size:.9rem;outline:none;transition:.2s;cursor:pointer;">
+          <option value="accuracy" style="background:#070711">🎯 정확도 위주 (기본) - 깨끗한 데이터</option>
+          <option value="simplicity" style="background:#070711">✨ 간소화 위주 (노이즈 강건성) - 실험 데이터</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Advanced Settings Toggle -->
+    <div style="margin-top: 1.5rem; text-align: left;">
+      <button type="button" onclick="document.getElementById('advancedPanel').style.display = document.getElementById('advancedPanel').style.display === 'none' ? 'block' : 'none'" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:0.95rem;font-weight:bold;padding:0.5rem 0;">
+        ⚙️ 고급 설정 (Advanced Settings) ▼
+      </button>
+    </div>
+    
+    <div id="advancedPanel" style="display:none;margin-top:1rem;padding:1.5rem;background:var(--adv-bg);border:1px solid var(--adv-border);border-radius:12px;text-align:left;">
+      
+      <!-- Penalty Slider -->
+      <div class="param" style="margin-bottom: 2rem;">
+        <label style="display:flex; justify-content:space-between;">
+          <span>수식 복잡도 패널티 가중치</span>
+          <span id="penaltyVal" style="color:var(--text-sub);">1배 (기본)</span>
+        </label>
+        <input type="range" id="penaltyWeight" min="1" max="100" value="1" oninput="document.getElementById('penaltyVal').textContent = this.value + '배' + (this.value==='1' ? ' (기본)' : '')" style="width:100%; margin-top:0.5rem; cursor:pointer;">
+        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">값이 높을수록 약간의 정확도를 포기하더라도 극단적으로 짧고 간결한 수식을 선호합니다.</p>
+      </div>
+
+      <!-- Forced Symbols -->
+      <div class="param">
+        <label style="margin-bottom:1rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem; font-size:1rem; color:var(--text-main);">필수 심볼 및 힌트 주입</label>
+        
+        <div style="display:flex; flex-direction:column; gap:1.2rem;">
+          
+          <!-- 삼각함수 -->
+          <div style="background:var(--inner-bg); border:1px solid var(--inner-border); border-radius:8px; padding:1.2rem;">
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <input type="checkbox" id="chkTrig" style="width:1.2rem; height:1.2rem; cursor:pointer;" onchange="document.getElementById('trigParams').style.display = this.checked ? 'block' : 'none'">
+              <label for="chkTrig" style="margin:0; cursor:pointer; font-size:1.05rem; font-weight:bold; color:var(--text-main); white-space:nowrap;">삼각함수 (Trigonometric)</label>
+            </div>
+            <div id="trigParams" style="display:none; margin-top:1.2rem;">
+              <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">함수 종류</label>
+                <select id="trigType" style="width:100%; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px; padding:0.4rem; font-size:0.85rem; outline:none;">
+                  <option value="cos">cos() 코사인</option>
+                  <option value="sin">sin() 사인</option>
+                  <option value="tan">tan() 탄젠트</option>
+                </select>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem;">
+                <div>
+                  <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">진폭 (Amp)</label>
+                  <input type="text" id="trigAmp" placeholder="자동 탐색" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.2rem;">
+                    <label style="font-size:0.75rem; color:var(--text-muted); margin:0;">주파수 파트</label>
+                    <select id="trigFreqType" style="background:var(--input-bg); border:1px solid var(--border); color:var(--text-sub); font-size:0.7rem; outline:none; cursor:pointer; padding:0 2px; border-radius:3px;">
+                      <option value="omega">각주파수 (ω)</option>
+                      <option value="freq">주파수 (f)</option>
+                    </select>
+                  </div>
+                  <input type="text" id="trigFreq" placeholder="자동 탐색" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:0.2rem;">위상 (Phase)</label>
+                  <input type="text" id="trigPhase" placeholder="예: 0" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.8rem; line-height:1.4;">값을 비워두면 AI가 알아서 탐색합니다. '0'을 입력하면 해당 파라미터는 구조에서 삭제됩니다.</p>
+            </div>
+          </div>
+
+          <!-- 지수함수 -->
+          <div style="background:var(--inner-bg); border:1px solid var(--inner-border); border-radius:8px; padding:1.2rem;">
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <input type="checkbox" id="chkExp" style="width:1.2rem; height:1.2rem; cursor:pointer;" onchange="document.getElementById('expParams').style.display = this.checked ? 'block' : 'none'">
+              <label for="chkExp" style="margin:0; cursor:pointer; font-size:1.05rem; font-weight:bold; color:var(--text-main); white-space:nowrap;">지수함수 (Exponential)</label>
+            </div>
+            <div id="expParams" style="display:none; margin-top:1.2rem;">
+              <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">함수 종류 (밑)</label>
+                <select id="expType" onchange="document.getElementById('expBaseBox').style.display = this.value === 'pow' ? 'block' : 'none'" style="width:100%; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px; padding:0.4rem; font-size:0.85rem; outline:none;">
+                  <option value="exp">자연상수 e ( exp(x) )</option>
+                  <option value="pow">임의의 상수 밑 ( a^x )</option>
+                </select>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:0.8rem;">
+                <div id="expBaseBox" style="display:none;">
+                  <label style="font-size:0.75rem; color:var(--text-muted);">밑 (Base a)</label>
+                  <input type="text" id="expBaseVal" placeholder="예: 2, 10" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:var(--text-muted);">계수 (Coef)</label>
+                  <input type="text" id="expCoef" placeholder="자동 탐색" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:var(--text-muted);">지수부 (Exponent)</label>
+                  <input type="text" id="expExponent" placeholder="자동 탐색" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 로그함수 -->
+          <div style="background:var(--inner-bg); border:1px solid var(--inner-border); border-radius:8px; padding:1.2rem;">
+            <div style="display:flex; align-items:center; gap:0.8rem;">
+              <input type="checkbox" id="chkLog" style="width:1.2rem; height:1.2rem; cursor:pointer;" onchange="document.getElementById('logParams').style.display = this.checked ? 'block' : 'none'">
+              <label for="chkLog" style="margin:0; cursor:pointer; font-size:1.05rem; font-weight:bold; color:var(--text-main); white-space:nowrap;">로그함수 (Logarithmic)</label>
+            </div>
+            <div id="logParams" style="display:none; margin-top:1.2rem;">
+              <div style="margin-bottom:1rem;">
+                <label style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.3rem;">함수 종류 (밑)</label>
+                <select id="logType" onchange="document.getElementById('logBaseBox').style.display = this.value === 'loga' ? 'block' : 'none'" style="width:100%; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px; padding:0.4rem; font-size:0.85rem; outline:none;">
+                  <option value="ln">자연로그 ( ln(x) )</option>
+                  <option value="log10">상용로그 ( log10(x) )</option>
+                  <option value="loga">임의의 상수 밑 ( log_a(x) )</option>
+                </select>
+              </div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.8rem;">
+                <div id="logBaseBox" style="display:none;">
+                  <label style="font-size:0.75rem; color:var(--text-muted);">밑 (Base a)</label>
+                  <input type="text" id="logBaseVal" placeholder="예: 2" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+                <div>
+                  <label style="font-size:0.75rem; color:var(--text-muted);">계수 (Coef)</label>
+                  <input type="text" id="logCoef" placeholder="자동 탐색" style="width:100%; padding:0.4rem 0.5rem; font-size:0.85rem; background:var(--input-bg); border:1px solid var(--border-mid); color:var(--text-main); border-radius:4px;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    
+    <!-- Playground -->
+    <div style="margin-top:2.5rem; text-align:left;">
+      <h3 style="font-size:1.1rem; color:var(--text-main); margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;">
+        <span style="color:var(--text-sub);">🧪</span> 샘플 데이터로 바로 시작하기
+      </h3>
+      
+      <div style="display:flex; flex-direction:column; gap:1.5rem;">
+        <!-- Symbolic Track -->
+        <div>
+          <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem; text-transform:uppercase; letter-spacing:0.05em;">심볼릭 트랙 (Meta-Symbolic Engine)</h4>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+            <button onclick="loadSample('sym_integral', this)" class="sample-card">
+              <div class="s-title">푸리에 변환</div>
+              <div class="s-desc">도메인이 소거되는 적분형</div>
+            </button>
+            <button onclick="loadSample('sym_derivative', this)" class="sample-card">
+              <div class="s-title">파동 변환</div>
+              <div class="s-desc">도함수가 도출되는 미분형</div>
+            </button>
+            <button onclick="loadSample('sym_algebraic', this)" class="sample-card">
+              <div class="s-title">스케일링/편이</div>
+              <div class="s-desc">순수 대수적 매핑 구조</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Numeric Track -->
+        <div>
+          <h4 style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0.8rem; text-transform:uppercase; letter-spacing:0.05em;">수치형 트랙 (SINDy Engine)</h4>
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem;">
+            <button onclick="loadSample('num_integral', this)" class="sample-card">
+              <div class="s-title">위치 누적 탐색</div>
+              <div class="s-desc">속도를 적분한 시계열 궤적</div>
+            </button>
+            <button onclick="loadSample('num_derivative', this)" class="sample-card">
+              <div class="s-title">공기저항 감쇠운동</div>
+              <div class="s-desc">가속도가 지배하는 미분형</div>
+            </button>
+            <button onclick="loadSample('num_algebraic', this)" class="sample-card">
+              <div class="s-title">운동에너지</div>
+              <div class="s-desc">다변수 연속 대수 조합형</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="runBtn" onclick="startRun()" disabled>
+      🚀 탐색 시작
+    </button>
+  </div>
+</div>
+
+<!-- RUN VIEW -->
+<div id="runView" class="view">
+  <h1 style="font-size:1.6rem">GA 진행 중...</h1>
+  <p class="sub" id="runSubtitle">탐색 중...</p>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="dashboard" style="grid-template-columns: repeat(4, 1fr);">
+    <div class="glass card" style="grid-column: span 1;">
+      <h3>탐색 상태 (경과 시간)</h3>
+      <div class="score-big" id="timerDisplay" style="font-size: 2.5rem; color: #10b981; min-width: 120px; display: inline-block; text-align: left;">0.0s</div>
+      <div class="depth-badge" id="depthBadge" style="margin-top: 0.8rem; display: inline-block;">준비 중</div>
+    </div>
+    <div class="glass card" style="grid-column: span 1;">
+      <h3>현재 최고 적합도</h3>
+      <div class="score-big" id="scoreBig" style="font-size: 2.5rem;">—</div>
+      <div style="margin-top:0.8rem;font-size:0.85rem;color:var(--text-sub);">누적 평가: <strong id="evalCountDisplay" style="color:var(--text-main)">0</strong>개</div>
+    </div>
+    <div class="glass card" style="grid-column: span 2;">
+      <h3>현재 최고 수식</h3>
+      <div class="kernel-eq" id="kernelEq" style="font-size: 1.1rem; margin-top: 1rem;">탐색 중...</div>
+    </div>
+    <div class="glass card" style="grid-column:1/-1">
+      <h3>적합도 진화 곡선</h3>
+      <div class="chart-wrap"><canvas id="fitnessChart"></canvas></div>
+    </div>
+    <div class="glass card" style="grid-column:1/-1">
+      <h3>실시간 로그</h3>
+      <div class="log-panel" id="logPanel"></div>
+    </div>
+    <div style="grid-column:1/-1; display:flex; justify-content:flex-end; gap:1rem; margin-top:0.5rem;">
+      <button class="btn-sec" id="pauseBtn" onclick="togglePause()" style="flex:none; width:150px; background:rgba(245,158,11,.1); color:#fcd34d; border-color:rgba(245,158,11,.3); font-weight:bold;">⏸️ 일시정지</button>
+      <button class="btn-sec" onclick="cancelRun()" style="flex:none; width:150px; background:rgba(239,68,68,.1); color:#fca5a5; border-color:rgba(239,68,68,.3); font-weight:bold;">🛑 탐색 취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT VIEW -->
+<div id="resultView" class="view">
+  <h1 id="resultTitle">탐색 결과</h1>
+  <p class="sub" id="resultSubtitle">아직 완료된 탐색이 없습니다</p>
+  <div class="glass result-card">
+    <div class="score-label">Fitness Score</div>
+    <div class="score-final" id="finalScore">—</div>
+    <div class="eq-display" id="finalEq">—</div>
+    <div class="eq-latex" id="latexDisplay"></div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="label">데이터 파일</div><div class="value" id="metaFile">—</div></div>
+      <div class="meta-item"><div class="label">소요 시간</div><div class="value" id="metaTime">—</div></div>
+      <div class="meta-item"><div class="label" id="lblKernelCount">탐색 커널 수</div><div class="value" id="metaCount">—</div></div>
+    </div>
+
+    <!-- Analysis Panel (Numerical) -->
+    <div class="analysis-panel" id="plotPanel" style="display:none; text-align:left; margin-top:2rem;">
+      <h3 style="font-size:1.0rem;color:var(--text-mid);margin-bottom:1rem;border-bottom:1px solid var(--inner-border);padding-bottom:0.5rem;">📊 수치형 트랙 역학 예측선 및 불확실성 시각화</h3>
+      
+      <div style="display:flex; gap:0.5rem; margin-bottom: 1rem;" id="chartTabs">
+        <button class="btn-tab active" onclick="switchChartTab('all', this)">전체 보기 (Combined)</button>
+        <button class="btn-tab" onclick="switchChartTab('scatter', this)">원본 데이터</button>
+        <button class="btn-tab" onclick="switchChartTab('gpr', this)">신뢰구간 (GPR)</button>
+        <button class="btn-tab" onclick="switchChartTab('fit', this)">AI 최적 피팅선</button>
+      </div>
+
+      <div class="chart-wrap" style="height: 380px; background:#ffffff; border-radius:12px; padding:1rem; border:1px solid rgba(255,255,255,0.05);">
+        <canvas id="resultChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Analysis Panel -->
+    <div class="analysis-panel" id="analysisPanel" style="display:none; text-align:left; margin-top:2rem;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+        <!-- 탐색 경로 -->
+        <div style="background:var(--inner-bg);border:1px solid var(--inner-border);padding:1.5rem;border-radius:12px;">
+          <h3 style="font-size:1.0rem;color:var(--text-mid);margin-bottom:1rem;border-bottom:1px solid var(--inner-border);padding-bottom:0.5rem;">🚀 탐색 경로 및 검증 내역</h3>
+          <ul style="list-style:none; padding:0; color:var(--text-sub); font-size:0.85rem; line-height:1.7;">
+            <li id="liSearchMethod"><strong style="color:var(--text-main);">탐색 방법:</strong> 점진적 심층 탐색 + 빔 서치 GA</li>
+            <li id="liSearchPrinciple"><strong style="color:var(--text-main);">탐색 원리:</strong> 우수 커널 시드 확장 및 기호 증명(Symbolic Proof)</li>
+            <li><strong style="color:var(--text-main);" id="lblProofBadge">기호 증명:</strong> <span id="proofBadge" style="color:#10b981; font-weight:bold;">✅ 성공 — 닫힌 형태 완전 일치 확인</span></li>
+          </ul>
+        </div>
+        <!-- 구조 분석 -->
+        <div style="background:var(--inner-bg);border:1px solid var(--inner-border);padding:1.5rem;border-radius:12px;">
+          <h3 style="font-size:1.0rem;color:var(--text-mid);margin-bottom:1rem;border-bottom:1px solid var(--inner-border);padding-bottom:0.5rem;">🔍 연산자 구조 분석</h3>
+          <ul id="structList" style="list-style:none; padding:0; color:var(--text-sub); font-size:0.85rem; line-height:1.7;">
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-sec" onclick="exportResult()">💾 결과 저장</button>
+      <button class="btn-sec" onclick="showView('upload')">🔄 다시 시작</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOUND OVERLAY -->
+<div class="found-overlay" id="foundOverlay">
+  <div class="glass found-box">
+    <div class="found-icon" id="foundIcon">🎉</div>
+    <div class="found-title" id="foundTitle">완벽한 해 발견!</div>
+    <div class="found-eq" id="overlayEq"></div>
+    <button class="btn-close" onclick="dismissFound()">결과 보기 →</button>
+  </div>
+</div>
+
+<script>
+let currentFile = null, currentRunId = null, eventSource = null;
+let chartData = [], totalKernels = 0, startTime = null, timerInterval = null;
+let isPaused = false, elapsedOffset = 0;
+let fitnessChart = null, resultChart = null;
+let plotDataPayload = null;
+
+async function loadSample(type, btnElement) {
+  const origHtml = btnElement.innerHTML;
+  btnElement.innerHTML = '<div style="text-align:center; color:#94a3b8; width:100%; font-size:0.85rem;">⏳ 로딩 중...</div>';
+  
+  try {
+    const res = await fetch('/api/sample/' + type);
+    const data = await res.json();
+    currentFile = data.filename;
+    
+    document.getElementById('fileInfo').style.display = 'block';
+    document.getElementById('fileInfo').innerHTML = `🧪 <strong>[샘플 로드됨] ${data.filename}</strong> &nbsp;|&nbsp; ${data.rows}행 &nbsp;|&nbsp; 열: ${(data.columns || []).join(', ')}`;
+    
+    if (data.preview) {
+      const pb = document.getElementById('previewBox');
+      pb.style.display = 'block';
+      pb.innerHTML = data.preview.map(l => `<div style="font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l}</div>`).join('');
+    }
+    
+    document.getElementById('fileInput').value = '';
+    document.getElementById('runBtn').disabled = false;
+    document.querySelector('.drop-zone strong').textContent = '✅ ' + data.filename;
+    
+    // Auto scroll to run button
+    document.getElementById('runBtn').scrollIntoView({behavior: 'smooth', block: 'center'});
+    
+  } catch(e) {
+    alert("샘플 생성에 실패했습니다.");
+  } finally {
+    btnElement.innerHTML = origHtml;
+  }
+}
+
+// ── Views ───────────────────────────────────────────────────
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name + 'View').classList.add('active');
+  document.querySelectorAll('.nav-btn')[['upload','run','result'].indexOf(name)].classList.add('active');
+}
+
+// ── Drag & Drop ──────────────────────────────────────────────
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag'); handleFile(e.dataTransfer.files[0]); });
+
+async function handleFile(file) {
+  if (!file) return;
+  currentFile = file;
+  const fd = new FormData(); fd.append('file', file);
+  const res = await fetch('/api/upload', { method: 'POST', body: fd });
+  const data = await res.json();
+  document.getElementById('fileInfo').style.display = 'block';
+  document.getElementById('fileInfo').innerHTML = `📊 <strong>${data.filename}</strong> &nbsp;|&nbsp; ${data.rows}행 &nbsp;|&nbsp; 열: ${(data.columns || []).join(', ')}`;
+  if (data.preview) {
+    const pb = document.getElementById('previewBox');
+    pb.style.display = 'block';
+    pb.innerHTML = data.preview.map(l => `<div style="font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l}</div>`).join('');
+  }
+  document.getElementById('runBtn').disabled = false;
+  document.querySelector('.drop-zone strong').textContent = '✅ ' + file.name;
+}
+
+// ── Chart Init ───────────────────────────────────────────────
+function initChart() {
+  const ctx = document.getElementById('fitnessChart').getContext('2d');
+  if (fitnessChart) fitnessChart.destroy();
+  fitnessChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: '적합도 점수', data: [],
+      borderColor: '#9ca3af', backgroundColor: 'rgba(156,163,175,.08)',
+      fill: true, tension: 0.4, pointRadius: 3, pointBackgroundColor: '#9ca3af' }] },
+    options: { animation: false, responsive: true, maintainAspectRatio: false,
+      scales: { y: { min: 0, max: 100, grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim() },
+          ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-tick').trim(), callback: v => v + '%' } },
+        x: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-grid').trim() }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--chart-tick').trim() } } },
+      plugins: { legend: { display: false } } }
+  });
+}
+
+// ── Run ──────────────────────────────────────────────────────
+async function startRun() {
+  if (!currentFile) { alert('데이터를 먼저 로드하세요.'); return; }
+  
+  // Set dynamic subtitle
+  let fileName = currentFile.name || currentFile;
+  document.getElementById('runSubtitle').textContent = `분석 대상: ${fileName}`;
+  
+  showView('run');
+  document.querySelector('#runView h1').textContent = 'GA 진행 중...';
+  document.getElementById('metaFile').textContent = fileName;
+  chartData = []; totalKernels = 0; startTime = Date.now();
+  initChart();
+  document.getElementById('logPanel').innerHTML = '';
+  document.getElementById('scoreBig').textContent = '—';
+  document.getElementById('depthBadge').textContent = '준비 중';
+  document.getElementById('kernelEq').textContent = '탐색 대기 중...';
+  document.getElementById('evalCountDisplay').textContent = '0';
+  document.getElementById('timerDisplay').textContent = '0.0s';
+  document.getElementById('pauseBtn').innerHTML = '⏸️ 일시정지';
+  document.getElementById('pauseBtn').style.background = 'rgba(245,158,11,.1)';
+  isPaused = false;
+  elapsedOffset = 0;
+  plotDataPayload = null;
+  
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if (!isPaused && startTime) {
+      document.getElementById('timerDisplay').textContent = ((Date.now() - startTime + elapsedOffset) / 1000).toFixed(1) + 's';
+    }
+  }, 100);
+
+  const hints = {
+    trig: document.getElementById('chkTrig').checked ? {
+      type: document.getElementById('trigType').value,
+      amp: document.getElementById('trigAmp').value.trim(),
+      freq_type: document.getElementById('trigFreqType').value,
+      freq: document.getElementById('trigFreq').value.trim(),
+      phase: document.getElementById('trigPhase').value.trim()
+    } : null,
+    exp: document.getElementById('chkExp').checked ? {
+      type: document.getElementById('expType').value,
+      base_val: document.getElementById('expBaseVal').value.trim(),
+      coef: document.getElementById('expCoef').value.trim(),
+      exponent: document.getElementById('expExponent').value.trim()
+    } : null,
+    log: document.getElementById('chkLog').checked ? {
+      type: document.getElementById('logType').value,
+      base_val: document.getElementById('logBaseVal').value.trim(),
+      coef: document.getElementById('logCoef').value.trim()
+    } : null
+  };
+
+  const body = { filename: fileName,
+    pop_size: parseInt(document.getElementById('popSize').value) || 1000,
+    generations: parseInt(document.getElementById('generations').value) || 15,
+    penalty_weight: parseFloat(document.getElementById('penaltyWeight').value) || 1.0,
+    hints: hints
+  };
+  const res = await fetch('/api/run', { method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const { run_id } = await res.json();
+  currentRunId = run_id;
+  listenSSE(run_id);
+}
+
+function listenSSE(runId) {
+  if (eventSource) eventSource.close();
+  eventSource = new EventSource(`/api/stream/${runId}`);
+  eventSource.onmessage = e => handleEvent(JSON.parse(e.data));
+  eventSource.onerror = () => eventSource.close();
+}
+
+function handleEvent(ev) {
+  addLog(ev.raw || '', ev.type);
+  
+  if (ev.type === 'plot_data') {
+    plotDataPayload = ev.data;
+  }
+  
+  if (ev.score !== undefined && ev.score !== null) {
+    document.getElementById('scoreBig').textContent = ev.score.toFixed(4);
+    document.getElementById('progressFill').style.width = Math.min(ev.score, 100) + '%';
+  }
+  
+  if (ev.type === 'progress') {
+    totalKernels = ev.eval_count;
+    document.getElementById('evalCountDisplay').textContent = totalKernels.toLocaleString();
+    if (ev.depth !== undefined && ev.gen !== undefined) {
+      document.getElementById('depthBadge').textContent = `Depth ${ev.depth} | Gen ${ev.gen}`;
+    }
+  }
+
+  if (ev.type === 'generation') {
+    if (ev.eval_count) {
+      totalKernels = ev.eval_count;
+    } else {
+      totalKernels += parseInt(document.getElementById('popSize').value) || 1000;
+    }
+    document.getElementById('evalCountDisplay').textContent = totalKernels.toLocaleString();
+    document.getElementById('depthBadge').textContent = `Depth ${ev.depth} | Gen ${ev.gen}`;
+    chartData.push(ev.score);
+    fitnessChart.data.labels.push(`D${ev.depth}G${ev.gen}`);
+    fitnessChart.data.datasets[0].data.push(ev.score);
+    fitnessChart.update();
+  }
+  if (ev.type === 'best_kernel') {
+    document.getElementById('kernelEq').textContent = formatEqForDisplay(ev.equation);
+    if (ev.score) {
+      fitnessChart.data.labels.push(`Best Update`);
+      fitnessChart.data.datasets[0].data.push(ev.score);
+      fitnessChart.update();
+    }
+  }
+  if (ev.type === 'solution_found') {
+    document.getElementById('kernelEq').style.color = '#10b981';
+  }
+  if (ev.type === 'done') {
+    if (timerInterval) clearInterval(timerInterval);
+    document.querySelector('#runView h1').textContent = '탐색 완료 ✨';
+    document.getElementById('runSubtitle').textContent = '모든 분석이 종료되었습니다';
+    eventSource.close();
+    const elapsed = ((Date.now() - startTime + elapsedOffset) / 1000).toFixed(1);
+    document.getElementById('metaTime').textContent = elapsed + '초';
+    
+    if (plotDataPayload) {
+      document.getElementById('lblKernelCount').textContent = '최적화 알고리즘';
+      document.getElementById('metaCount').textContent = 'STLSQ 희소 회귀';
+      document.getElementById('liSearchMethod').innerHTML = '<strong class="struct-label">탐색 방법:</strong> L1 희소 회귀 (STLSQ) + Surrogate-Assisted';
+      document.getElementById('liSearchPrinciple').innerHTML = '<strong class="struct-label">탐색 원리:</strong> GPR 기반 불확실성 필터링 및 SINDy 라이브러리 조합';
+      document.getElementById('lblProofBadge').innerHTML = '수치 검증:';
+    } else {
+      document.getElementById('lblKernelCount').textContent = '탐색 커널 수';
+      document.getElementById('metaCount').textContent = totalKernels > 0 ? totalKernels.toLocaleString() + '개' : '공리 연역 (사전 탐색)';
+      document.getElementById('liSearchMethod').innerHTML = '<strong class="struct-label">탐색 방법:</strong> 점진적 심층 탐색 + 빔 서치 GA';
+      document.getElementById('liSearchPrinciple').innerHTML = '<strong class="struct-label">탐색 원리:</strong> 우수 커널 시드 확장 및 기호 증명(Symbolic Proof)';
+      document.getElementById('lblProofBadge').innerHTML = '기호 증명:';
+    }
+
+    if (ev.equation) {
+      document.getElementById('overlayEq').textContent = formatEqForDisplay(ev.equation);
+      
+      // 점수·트랙에 따라 overlay 메시지 차별화
+      const isNumerical = !!plotDataPayload;
+      const score = ev.score || 0;
+      const iconEl = document.getElementById('foundIcon');
+      const titleEl = document.getElementById('foundTitle');
+      titleEl.className = 'found-title'; // reset
+      
+      if (isNumerical) {
+        iconEl.textContent = '📊';
+        if (score >= 95) {
+          titleEl.textContent = '동역학 방정식 발견!';
+          titleEl.classList.add('blue');
+        } else if (score >= 85) {
+          titleEl.textContent = '근사 해 도출 완료';
+          titleEl.classList.add('gray-blue');
+        } else {
+          titleEl.textContent = '수치 해 추정 완료';
+          titleEl.classList.add('gray-blue');
+        }
+      } else {
+        iconEl.textContent = '🎉';
+        if (score >= 99) {
+          titleEl.textContent = '완벽한 해 발견!';
+          // 기본 초록색 유지
+        } else if (score >= 90) {
+          titleEl.textContent = '유력한 해 발견!';
+          titleEl.classList.add('yellow');
+        } else {
+          titleEl.textContent = '근사 해 도출 완료';
+          titleEl.classList.add('yellow');
+        }
+      }
+      
+      document.getElementById('foundOverlay').classList.add('show');
+      showResult(ev.equation, ev.score);
+    }
+  }
+  
+  if (ev.type === 'cancelled') {
+    if (timerInterval) clearInterval(timerInterval);
+    document.querySelector('#runView h1').textContent = '탐색 취소됨 🛑';
+    document.getElementById('runSubtitle').textContent = '사용자에 의해 탐색이 강제 종료되었습니다.';
+    eventSource.close();
+    
+    // 1.5초 후 업로드(메인) 화면으로 복귀
+    setTimeout(() => {
+        showView('upload');
+    }, 1500);
+  }
+}
+
+async function togglePause() {
+  if (!currentRunId) return;
+  const btn = document.getElementById('pauseBtn');
+  if (isPaused) {
+    await fetch(`/api/resume/${currentRunId}`, {method: 'POST'});
+    isPaused = false;
+    startTime = Date.now();
+    btn.innerHTML = '⏸️ 일시정지';
+    btn.style.background = 'rgba(245,158,11,.1)';
+    btn.style.color = '#fcd34d';
+    document.querySelector('#runView h1').textContent = 'GA 진행 중...';
+  } else {
+    await fetch(`/api/pause/${currentRunId}`, {method: 'POST'});
+    isPaused = true;
+    if (startTime) elapsedOffset += Date.now() - startTime;
+    startTime = null;
+    btn.innerHTML = '▶️ 계속하기';
+    btn.style.background = 'rgba(16,185,129,.1)';
+    btn.style.color = '#6ee7b7';
+    document.querySelector('#runView h1').textContent = '탐색 일시정지됨 ⏸️';
+  }
+}
+
+async function cancelRun() {
+  if (!currentRunId) return;
+  if (!confirm('정말 탐색을 취소하시겠습니까?\n지금까지 찾은 최고 수식 기록까지만 보존됩니다.')) return;
+  await fetch(`/api/cancel/${currentRunId}`, {method: 'POST'});
+}
+
+function addLog(text, type) {
+  if (!text) return;
+  const p = document.getElementById('logPanel');
+  const d = document.createElement('div');
+  d.className = 'log-line' + (type === 'generation' ? ' log-gen' : type === 'solution_found' ? ' log-found' : '');
+  d.textContent = text.slice(0, 120);
+  p.appendChild(d);
+  p.scrollTop = p.scrollHeight;
+}
+
+function dismissFound() {
+  document.getElementById('foundOverlay').classList.remove('show');
+  showView('result');
+}
+
+function extractStructure(eq, isNumerical=false) {
+  if (!eq) return '';
+  const struct = [];
+  
+  if (isNumerical) {
+    struct.push(`<li><strong class="struct-label">구조:</strong> 비선형 역학 피팅 수식 (Nonlinear Dynamics Equation)</li>`);
+    struct.push(`<li><strong class="struct-label">수식:</strong> <code class="struct-value">${eq}</code></li>`);
+    return struct.join('');
+  }
+
+  const intMatch = eq.match(/Integral\((.*?),\s*\(([^,]+),\s*([^,]+),\s*([^)]+)\)\)/);
+  if (intMatch) {
+    const [_, expr, variable, lower, upper] = intMatch;
+    struct.push(`<li><strong class="struct-label">구조:</strong> 적분형 연산자 (Integral Operator)</li>`);
+    struct.push(`<li><strong class="struct-label">적분 변수:</strong> <code class="struct-value">${variable.trim()}</code></li>`);
+    
+    const fmtLower = lower.trim().replace('-oo', '-∞').replace('oo', '∞');
+    const fmtUpper = upper.trim().replace('-oo', '-∞').replace('oo', '∞');
+    struct.push(`<li><strong class="struct-label">적분 구간:</strong> <code class="struct-value">[ ${fmtLower}, ${fmtUpper} )</code></li>`);
+    struct.push(`<li><strong class="struct-label">피적분함수:</strong> <code class="struct-value">${expr.trim()}</code></li>`);
+    
+    let kernel = expr.replace(/f_t\s*\*\s*/, '').replace(/\s*\*\s*f_t/, '');
+    struct.push(`<li><strong class="struct-label">커널 (Kernel):</strong> <code class="struct-kernel">${kernel.trim()}</code></li>`);
+  } else {
+    struct.push(`<li><strong class="struct-label">구조:</strong> 대수형 변환 연산자 (Algebraic Operator)</li>`);
+    struct.push(`<li><strong class="struct-label">수식:</strong> <code class="struct-value">${eq}</code></li>`);
+  }
+  return struct.join('');
+}
+
+function formatEqForDisplay(eq) {
+  if (!eq) return '—';
+  // 괄호 깊이 0인 위치의 연산자 앞에서만 줄바꿈
+  // + - 앞, 쉼표 뒤에서 break 허용
+  let result = '';
+  let depth = 0;
+  for (let i = 0; i < eq.length; i++) {
+    const ch = eq[i];
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth--;
+    // depth=0일 때 +, - (이진 연산자) 앞에 줄바꿈 힌트 삽입
+    if (depth === 0 && (ch === '+' || ch === '-') && i > 0) {
+      result += '\n' + ch;
+    } else if (depth <= 1 && ch === ',' && i < eq.length - 1) {
+      // 1단계 이하 쉼표 뒤에서 줄바꿈
+      result += ',\n ';
+    } else {
+      result += ch;
+    }
+  }
+  return result.trim();
+}
+
+function showResult(eq, score) {
+  document.getElementById('resultTitle').innerHTML = '발견 완료! ✨';
+  document.getElementById('resultSubtitle').textContent = 'AI가 물리 방정식을 성공적으로 추론했습니다';
+  document.getElementById('finalScore').textContent = score ? score.toFixed(4) : '—';
+  document.getElementById('finalEq').textContent = formatEqForDisplay(eq);
+  
+  // 구조 분석 추출 및 표시
+  if (eq && eq !== '—') {
+    document.getElementById('analysisPanel').style.display = 'block';
+    const isNumerical = !!plotDataPayload;
+    document.getElementById('structList').innerHTML = extractStructure(eq, isNumerical);
+    
+    if (isNumerical) {
+      document.getElementById('proofBadge').innerHTML = '✅ 수치적 검증 완료 (Surrogate-Assisted)';
+      document.getElementById('proofBadge').style.color = '#38bdf8'; // numerical color
+    } else if (score >= 99.0) {
+      document.getElementById('proofBadge').innerHTML = '✅ 성공 — 닫힌 형태 완전 일치 확인';
+      document.getElementById('proofBadge').style.color = '#10b981';
+    } else {
+      document.getElementById('proofBadge').innerHTML = '⚠️ 부분 일치 (휴리스틱 근사)';
+      document.getElementById('proofBadge').style.color = '#f59e0b';
+    }
+  } else {
+    document.getElementById('analysisPanel').style.display = 'none';
+  }
+  
+  if (plotDataPayload) {
+    document.getElementById('plotPanel').style.display = 'block';
+    renderResultChart(plotDataPayload);
+  } else {
+    document.getElementById('plotPanel').style.display = 'none';
+  }
+
+  // LaTeX 렌더링 시도
+  const latex = eqToLatex(eq || '');
+  const ld = document.getElementById('latexDisplay');
+  ld.innerHTML = '\\(' + latex + '\\)';
+  if (window.MathJax) MathJax.typesetPromise([ld]);
+}
+
+function eqToLatex(eq) {
+  let latex = eq;
+  
+  // 1. 적분 기호 동적 변환 (모든 변수 및 구간 대응)
+  // Integral(expr, (var, lower, upper)) -> \int_{lower}^{upper} expr \, d{var}
+  latex = latex.replace(/Integral\((.*?),\s*\(([^,]+),\s*([^,]+),\s*([^)]+)\)\)/g, function(match, expr, variable, lower, upper) {
+    lower = lower.replace(/-oo/g, '-\\infty').replace(/oo/g, '\\infty').trim();
+    upper = upper.replace(/-oo/g, '-\\infty').replace(/oo/g, '\\infty').trim();
+    let varName = variable.trim();
+    // 피적분함수 내의 f_t를 f(변수)로 치환
+    expr = expr.replace(/f_t/g, `f(${varName})`);
+    return `\\int_{${lower}}^{${upper}} ${expr} \\, d${varName}`;
+  });
+
+  // 2. 적분 외부에 남은 f_t 변환 (대수 쇼트컷 등)
+  latex = latex.replace(/f_t/g, 'f(t)');
+
+  // 3. 수학 기호 및 연산자 변환
+  latex = latex.replace(/omega/g, '\\omega ')
+               .replace(/pi/g, '\\pi ')
+               .replace(/\bI\b/g, 'i') // 허수 단위 I -> i
+               .replace(/exp\(([^)]+)\)/g, 'e^{$1}')
+               .replace(/cos\(([^)]+)\)/g, '\\cos($1)')
+               .replace(/sin\(([^)]+)\)/g, '\\sin($1)')
+               .replace(/\*\*/g, '^')
+               .replace(/\*/g, ' '); // * 기호를 공백으로 변경하여 깔끔한 수식 표현
+
+  return latex;
+}
+
+function renderResultChart(data, mode='all') {
+  const ctx = document.getElementById('resultChart').getContext('2d');
+  if (resultChart) resultChart.destroy();
+  
+  const upper = data.gpr_mean.map((m, i) => m + 1.96 * data.gpr_std[i]);
+  const lower = data.gpr_mean.map((m, i) => m - 1.96 * data.gpr_std[i]);
+
+  const datasets = [];
+
+  if (mode === 'all' || mode === 'scatter') {
+    datasets.push({
+      label: '실제 관측 데이터 (Scatter)',
+      data: data.y_actual,
+      type: 'scatter',
+      backgroundColor: '#ef4444',
+      borderColor: '#ef4444',
+      pointRadius: mode === 'scatter' ? 3 : 1.5,
+      order: 1
+    });
+  }
+
+  if (mode === 'all' || mode === 'fit') {
+    datasets.push({
+      label: 'AI 발견 방정식 (Fitted Line)',
+      data: data.y_pred,
+      type: 'line',
+      borderColor: '#10b981',
+      borderWidth: mode === 'fit' ? 2 : 1.2,
+      fill: false,
+      pointRadius: 0,
+      order: 2
+    });
+  }
+
+  if (mode === 'all' || mode === 'gpr') {
+    datasets.push({
+      label: 'GPR 평균 (Mean)',
+      data: data.gpr_mean,
+      type: 'line',
+      borderColor: '#0284c7',
+      borderDash: [4, 4],
+      borderWidth: 1.0,
+      fill: false,
+      pointRadius: 0,
+      order: 3
+    });
+    datasets.push({
+      label: '95% 신뢰구간 (하한)',
+      data: lower,
+      type: 'line',
+      borderColor: 'transparent',
+      fill: false,
+      pointRadius: 0,
+      order: 5
+    });
+    datasets.push({
+      label: '95% 신뢰구간 (상한)',
+      data: upper,
+      type: 'line',
+      borderColor: 'transparent',
+      backgroundColor: 'rgba(56, 189, 248, 0.2)',
+      fill: '-1',
+      pointRadius: 0,
+      order: 4
+    });
+  }
+
+  resultChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.time_axis.map(v => v.toFixed(3)),
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#334155', font: { weight: 'bold' } } }
+      },
+      scales: {
+        x: { ticks: { color: '#64748b' }, grid: { color: '#f1f5f9' } },
+        y: { ticks: { color: '#64748b' }, grid: { color: '#f1f5f9' } }
+      }
+    }
+  });
+}
+
+function switchChartTab(mode, btnElement) {
+  document.querySelectorAll('#chartTabs .btn-tab').forEach(b => b.classList.remove('active'));
+  btnElement.classList.add('active');
+  if (plotDataPayload) {
+    renderResultChart(plotDataPayload, mode);
+  }
+}
+
+function exportResult() {
+  const data = {
+    equation: document.getElementById('finalEq').textContent,
+    score: document.getElementById('finalScore').textContent,
+    file: document.getElementById('metaFile').textContent,
+    elapsed: document.getElementById('metaTime').textContent,
+    kernels: document.getElementById('metaCount').textContent,
+    timestamp: new Date().toISOString(),
+    fitness_history: chartData,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'result_' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+}
+
+// --- History Logic ---
+async function openHistory() {
+  document.getElementById('historyModal').style.display = 'flex';
+  await loadHistory();
+}
+
+async function loadHistory() {
+  const list = document.getElementById('historyList');
+  list.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:3rem;">히스토리를 불러오는 중...</div>';
+  try {
+    const res = await fetch('/api/history');
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      list.innerHTML = '<div style="text-align:center; color:#64748b; padding:3rem;">저장된 탐색 기록이 없습니다.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    data.forEach(item => {
+      const d = new Date(item.timestamp);
+      const dateStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+      const sc = item.result.score || 0;
+      const scoreBadge = sc >= 99.0 
+          ? `<span style="background:rgba(34,197,94,0.2); color:#4ade80; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">✅ 완전 일치</span>`
+          : `<span style="background:rgba(234,179,8,0.2); color:#facc15; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:bold;">⚠️ 근사해 (${sc.toFixed(2)}점)</span>`;
+
+      let settingsStr = `Pop: ${item.settings.pop_size} | Gen: ${item.settings.generations} | Penalty: ${item.settings.penalty_weight}배`;
+
+      const card = document.createElement('div');
+      card.style.cssText = "background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:1.2rem; display:flex; flex-direction:column; gap:0.8rem; position:relative;";
+      card.innerHTML = `
+        <button onclick="deleteHistory('${item.run_id}')" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:#64748b; cursor:pointer; font-size:1.5rem; line-height:1; transition:0.2s;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#64748b'">&times;</button>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:0.8rem; color:#94a3b8;">🕒 ${dateStr}</div>
+          <div style="margin-right: 2rem;">${scoreBadge}</div>
+        </div>
+        
+        <div style="font-size:1.1rem; color:#38bdf8; font-weight:bold; word-break:break-all;">
+          📄 ${item.dataset_name}
+        </div>
+        
+        <div style="font-size:0.8rem; color:#64748b;">⚙️ ${settingsStr} &nbsp;|&nbsp; ⏱️ 소요시간: ${item.result.elapsed_time_sec}초</div>
+        
+        <div style="background:rgba(0,0,0,0.4); padding:1rem; border-radius:8px; overflow-x:auto; margin-top:0.5rem; border:1px solid rgba(255,255,255,0.03);">
+          <div style="color:#a78bfa; font-family:monospace; margin-bottom:0.8rem; font-size:0.85rem; padding-bottom:0.8rem; border-bottom:1px dashed rgba(255,255,255,0.1);">${item.result.equation_str || '탐색 실패'}</div>
+          <div id="math-hist-${item.run_id}" style="font-size:1.2rem; text-align:center; color:#fff; min-height:1.5rem;"></div>
+        </div>
+      `;
+      list.appendChild(card);
+      
+      if (window.MathJax && item.result.equation_str) {
+          const mathDiv = card.querySelector(`#math-hist-${item.run_id}`);
+          let latexStr = eqToLatex(item.result.equation_str);
+          mathDiv.innerHTML = '\\( ' + latexStr + ' \\)';
+          MathJax.typesetPromise([mathDiv]);
+      }
+    });
+  } catch(e) {
+    list.innerHTML = '<div style="color:#ef4444; text-align:center; padding:3rem;">히스토리를 불러오는데 실패했습니다.</div>';
+  }
+}
+
+async function deleteHistory(run_id) {
+  if(!confirm("이 기록을 삭제하시겠습니까?")) return;
+  await fetch('/api/history/' + run_id, {method:'DELETE'});
+  loadHistory();
+}
+
+async function clearHistory() {
+  if(!confirm("모든 탐색 기록을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.")) return;
+  await fetch('/api/history/all', {method:'DELETE'});
+  loadHistory();
+}
+
+// ── Theme Toggle ──────────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  document.getElementById('themeToggle').textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('theme', next);
+  // Rebuild charts so grid colors refresh
+  if (fitnessChart) initChart();
+  if (resultChart && plotDataPayload) renderResultChart(plotDataPayload);
+}
+// Restore saved theme on load
+(function(){
+  const saved = localStorage.getItem('theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+})();
+</script>
+
+<!-- History Modal HTML -->
+<div id="historyModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--overlay-bg);z-index:9999;justify-content:center;align-items:center;backdrop-filter:blur(5px);">
+  <div style="background:var(--modal-bg);border:1px solid var(--border-mid);border-radius:16px;width:90%;max-width:800px;height:85vh;display:flex;flex-direction:column;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+    <div style="padding:1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="margin:0; font-size:1.3rem; color:#fff;">📜 과거 탐색 히스토리</h2>
+      <div>
+        <button onclick="clearHistory()" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.3); padding:0.4rem 0.8rem; border-radius:6px; cursor:pointer; margin-right:1rem; font-size:0.8rem; font-weight:bold; transition:0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.3)'" onmouseout="this.style.background='rgba(239,68,68,0.2)'">모두 지우기</button>
+        <button onclick="document.getElementById('historyModal').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1.8rem; cursor:pointer; line-height:1;">&times;</button>
+      </div>
+    </div>
+    <div id="historyList" style="padding:1.5rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:1rem;">
+      <!-- history items -->
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

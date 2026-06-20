@@ -1,0 +1,8 @@
+sympy
+numpy
+scipy
+pysindy
+scikit-optimize
+pandas
+scikit-learn
+gplearn
